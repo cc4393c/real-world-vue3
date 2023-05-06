@@ -24,7 +24,13 @@ onMounted(async () => {
 <template>
   <div v-if="event">
     <h1>{{ event.title }}</h1>
-    <p>{{ event.time }} on {{ event.date }} @ {{ event.location }}</p>
-    <p>{{ event.description }}</p>
+    <div id="nav">
+      <RouterLink :to="{ name: 'event-details' }">Details</RouterLink>
+      |
+      <RouterLink :to="{ name: 'event-register' }">Register</RouterLink>
+      |
+      <RouterLink :to="{ name: 'event-edit' }">Edit</RouterLink>
+    </div>
+    <RouterView :event="event" />
   </div>
 </template>
