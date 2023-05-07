@@ -5,11 +5,12 @@ import EventLayout from '../views/event/EventLayout.vue'
 import EventDetails from '../views/event/EventDetails.vue'
 import EventRegister from '../views/event/EventRegister.vue'
 import EventEdit from '../views/event/EventEdit.vue'
-import AboutView from '../views/AboutView.vue'
 import NotFound from '../views/NotFound.vue'
 import NetworkError from '../views/NetworkError.vue'
 import EventService from '@/services/EventService.js'
 import GStore from '@/stores/global'
+
+const AboutView = () => import('../views/AboutView.vue')
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -56,7 +57,8 @@ const router = createRouter({
         {
           path: 'edit',
           name: 'event-edit',
-          component: EventEdit
+          component: EventEdit,
+          meta: { requireAuth: true }
         },
       ]
     },
@@ -87,11 +89,32 @@ const router = createRouter({
       name: 'network-error',
       component: NetworkError
     }
-  ]
+  ],
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    }
+    return { top: 0 }
+  }
 })
 
-router.beforeEach(() => {
+router.beforeEach((to, from) => {
   NProgress.start()
+
+  const notAuthorized = true
+  if (to.meta.requireAuth && notAuthorized) {
+    GStore.flashMessage = 'Sorry, you are not authorized to this page.'
+
+    setTimeout(() => {
+      GStore.flashMessage = ''
+    }, 3000)
+
+    if (from.href) {
+      return false
+    } else {
+      return { path: '/' }
+    }
+  }
 })
 
 router.afterEach(() => {
