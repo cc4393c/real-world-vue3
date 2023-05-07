@@ -1,10 +1,13 @@
 <script setup>
 import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import EventCard from '@/components/EventCard.vue'
 import EventService from '@/services/EventService.js'
 import { watchEffect } from 'vue'
 
 const props = defineProps(['page'])
+
+const router = useRouter()
 
 const events = ref(null)
 const totalEvents = ref(0)
@@ -18,7 +21,14 @@ watchEffect(async () => {
     events.value = response.data
     totalEvents.value = response.headers['x-total-count']
   } catch (error) {
-    console.log(error)
+    if (error.response && error.response.status == 404) {
+      router.push({
+        name: '404-resource',
+        params: { resource: 'event' }
+      })
+    } else {
+      router.push({ name: 'network-error' })
+    }
   }
 })
 
