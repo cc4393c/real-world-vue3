@@ -1,5 +1,4 @@
 <script>
-import NProgress from 'nprogress'
 import EventCard from '@/components/EventCard.vue'
 import EventService from '@/services/EventService.js'
 
@@ -15,7 +14,6 @@ export default {
     }
   },
   async beforeRouteEnter(routeTo, routeFrom, next) {
-    NProgress.start()
     try {
       // Parse the page number from the route we're navigating to
       const response = await EventService.getEvents(2, parseInt(routeTo.query.page) || 1)
@@ -33,12 +31,9 @@ export default {
       } else {
         next({ name: 'network-error' })
       }
-    } finally {
-      NProgress.done()
     }
   },
   async beforeRouteUpdate(routeTo) {
-    NProgress.start()
     try {
       // Parse the page number from the route we're navigating to
       const response = await EventService.getEvents(2, parseInt(routeTo.query.page) || 1)
@@ -54,8 +49,6 @@ export default {
       } else {
         return { name: 'network-error' }
       }
-    } finally {
-      NProgress.done()
     }
   },
   computed: {
