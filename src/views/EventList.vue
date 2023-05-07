@@ -1,41 +1,70 @@
-<script setup>
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+<script>
+import NProgress from 'nprogress'
 import EventCard from '@/components/EventCard.vue'
 import EventService from '@/services/EventService.js'
-import { watchEffect } from 'vue'
 
-const props = defineProps(['page'])
-
-const router = useRouter()
-
-const events = ref(null)
-const totalEvents = ref(0)
-
-watchEffect(async () => {
-  events.value = null
-  totalEvents.value = 0
-  // get events from mock db when component is created
-  try {
-    const response = await EventService.getEvents(2, props.page)
-    events.value = response.data
-    totalEvents.value = response.headers['x-total-count']
-  } catch (error) {
-    if (error.response && error.response.status == 404) {
-      router.push({
-        name: '404-resource',
-        params: { resource: 'event' }
+export default {
+  props: ['page'],
+  components: {
+    EventCard
+  },
+  data() {
+    return {
+      events: null,
+      totalEvents: 0
+    }
+  },
+  async beforeRouteEnter(routeTo, routeFrom, next) {
+    NProgress.start()
+    try {
+      // Parse the page number from the route we're navigating to
+      const response = await EventService.getEvents(2, parseInt(routeTo.query.page) || 1)
+      // comp: component (View Model)
+      next(comp => {
+        comp.events = response.data
+        comp.totalEvents = response.headers['x-total-count']
       })
-    } else {
-      router.push({ name: 'network-error' })
+    } catch (error) {
+      if (error.response && error.response.status == 404) {
+        next({
+          name: '404-resource',
+          params: { resource: 'event' }
+        })
+      } else {
+        next({ name: 'network-error' })
+      }
+    } finally {
+      NProgress.done()
+    }
+  },
+  async beforeRouteUpdate(routeTo) {
+    NProgress.start()
+    try {
+      // Parse the page number from the route we're navigating to
+      const response = await EventService.getEvents(2, parseInt(routeTo.query.page) || 1)
+      // we can access this here
+      this.events = response.data
+      this.totalEvents = response.headers['x-total-count']
+    } catch (error) {
+      if (error.response && error.response.status == 404) {
+        return {
+          name: '404-resource',
+          params: { resource: 'event' }
+        }
+      } else {
+        return { name: 'network-error' }
+      }
+    } finally {
+      NProgress.done()
+    }
+  },
+  computed: {
+    hasNextPage() {
+      const totalPages = Math.ceil(this.totalEvents / 2)
+      return this.page < totalPages
     }
   }
-})
-
-const hasNextPage = computed(() => {
-  const totalPages = Math.ceil(totalEvents.value / 2)
-  return props.page < totalPages
-})
+} 
 </script>
 
 <template>

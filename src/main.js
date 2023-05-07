@@ -1,5 +1,6 @@
 import { createApp, reactive } from 'vue'
 import { createPinia } from 'pinia'
+import 'nprogress/nprogress.css'
 
 import App from './App.vue'
 import router from './router'
