@@ -42,7 +42,6 @@ const router = createRouter({
     {
       path: '/event/:afterEvent(.*)',
       redirect: to => {
-        // id is automatically passed through
         return { path: '/events/' + to.params.afterEvent }
       }
     },
